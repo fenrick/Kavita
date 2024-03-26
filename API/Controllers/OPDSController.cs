@@ -590,9 +590,13 @@ public class OpdsController : BaseApiController
         var items = (await _unitOfWork.ReadingListRepository.GetReadingListItemDtosByIdAsync(readingListId, userId)).ToList();
         foreach (var item in items)
         {
-            feed.Entries.Add(
-                CreateChapter(apiKey, $"{item.Order} - {item.SeriesName}: {item.Title}",
-                    string.Empty, item.ChapterId, item.VolumeId, item.SeriesId, prefix, baseUrl));
+            var chapter = await _unitOfWork.ChapterRepository.GetChapterDtoAsync(item.ChapterId);
+            var series = await _unitOfWork.SeriesRepository.GetSeriesDtoByIdAsync(item.SeriesId, userId);
+            var files = await _unitOfWork.ChapterRepository.GetFilesForChapterAsync(item.ChapterId);
+            foreach (var mangaFile in files)
+            {
+                feed.Entries.Add(await CreateChapterWithFile(userId, item.SeriesId, item.VolumeId, item.ChapterId, mangaFile, series, chapter, apiKey, prefix, baseUrl));
+            }
         }
         return CreateXmlResult(SerializeXml(feed));
     }
