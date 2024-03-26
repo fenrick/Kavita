@@ -992,7 +992,7 @@ public class OpdsController : BaseApiController
         };
     }
 
-    private static void AddPagination(Feed feed, PagedList<SeriesDto> list, string href)
+    private static void AddPagination<T>(Feed feed, PagedList<T> list, string href)
     {
         var url = href;
         if (href.Contains('?'))
