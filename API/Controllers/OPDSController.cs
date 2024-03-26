@@ -538,6 +538,8 @@ public class OpdsController : BaseApiController
 
         var feed = CreateFeed("All Reading Lists", $"{prefix}{apiKey}/reading-list", apiKey, prefix);
         SetFeedId(feed, "reading-list");
+        AddPagination(feed, readingLists, $"{prefix}{apiKey}/reading-list");
+
         foreach (var readingListDto in readingLists)
         {
             feed.Entries.Add(new FeedEntry()
