@@ -36,6 +36,12 @@ public class PanelsController : BaseApiController
     {
         if (string.IsNullOrEmpty(apiKey)) return Unauthorized("ApiKey is required");
         var userId = await _unitOfWork.UserRepository.GetUserIdByApiKeyAsync(apiKey);
+        var maxPages = await _unitOfWork.ChapterRepository.GetChapterTotalPagesAsync(dto.ChapterId);
+        if ((dto.PageNum + 1) == maxPages)
+        {
+            dto.PageNum = maxPages;
+        }
+
         await _readerService.SaveReadingProgress(dto, userId);
         return Ok();
     }
