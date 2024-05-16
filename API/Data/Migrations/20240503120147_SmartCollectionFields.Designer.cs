@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240503120147_SmartCollectionFields")]
+    partial class SmartCollectionFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
@@ -1871,25 +1874,13 @@ namespace API.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Author")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CompatibleVersion")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("Created")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("FileName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("GitHubPath")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsDefault")
@@ -1907,14 +1898,8 @@ namespace API.Data.Migrations
                     b.Property<string>("NormalizedName")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PreviewUrls")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Provider")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("ShaHash")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

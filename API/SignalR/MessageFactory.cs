@@ -41,9 +41,9 @@ public static class MessageFactory
     /// </summary>
     public const string OnlineUsers = "OnlineUsers";
     /// <summary>
-    /// When a series is added to a collection
+    /// When a Collection has been updated
     /// </summary>
-    public const string SeriesAddedToCollection = "SeriesAddedToCollection";
+    public const string CollectionUpdated = "CollectionUpdated";
     /// <summary>
     /// Event sent out during backing up the database
     /// </summary>
@@ -130,6 +130,10 @@ public static class MessageFactory
     /// Order, Visibility, etc has changed on the Sidenav. UI will refresh the layout
     /// </summary>
     public const string SideNavUpdate = "SideNavUpdate";
+    /// <summary>
+    /// A Theme was updated and UI should refresh to get the latest version
+    /// </summary>
+    public const string SiteThemeUpdated = "SiteThemeUpdated";
 
     public static SignalRMessage DashboardUpdateEvent(int userId)
     {
@@ -310,17 +314,17 @@ public static class MessageFactory
         };
     }
 
-    public static SignalRMessage SeriesAddedToCollectionEvent(int tagId, int seriesId)
+
+    public static SignalRMessage CollectionUpdatedEvent(int collectionId)
     {
         return new SignalRMessage
         {
-            Name = SeriesAddedToCollection,
+            Name = CollectionUpdated,
             Progress = ProgressType.None,
             EventType = ProgressEventType.Single,
             Body = new
             {
-                TagId = tagId,
-                SeriesId = seriesId
+                TagId = collectionId,
             }
         };
     }
@@ -428,7 +432,7 @@ public static class MessageFactory
     /// <param name="eventType"></param>
     /// <param name="seriesName"></param>
     /// <returns></returns>
-    public static SignalRMessage LibraryScanProgressEvent(string libraryName, string eventType, string seriesName = "")
+    public static SignalRMessage LibraryScanProgressEvent(string libraryName, string eventType, string seriesName = "", int? totalToProcess = null)
     {
         return new SignalRMessage()
         {
@@ -437,7 +441,12 @@ public static class MessageFactory
             SubTitle = seriesName,
             EventType = eventType,
             Progress = ProgressType.Indeterminate,
-            Body = null
+            Body = new
+            {
+                SeriesName = seriesName,
+                LibraryName = libraryName,
+                LeftToProcess = totalToProcess
+            }
         };
     }
 
@@ -480,10 +489,29 @@ public static class MessageFactory
         return new SignalRMessage()
         {
             Name = SiteThemeProgress,
-            Title = "Scanning Site Theme",
+            Title = "Processing Site Theme", // TODO: Localize SignalRMessage titles
             SubTitle = subtitle,
             EventType = eventType,
             Progress = ProgressType.Indeterminate,
+            Body = new
+            {
+                ThemeName = themeName,
+            }
+        };
+    }
+
+    /// <summary>
+    /// Sends an event to the UI informing of a SiteTheme update and UI needs to refresh the content
+    /// </summary>
+    /// <param name="themeName"></param>
+    /// <returns></returns>
+    public static SignalRMessage SiteThemeUpdatedEvent(string themeName)
+    {
+        return new SignalRMessage()
+        {
+            Name = SiteThemeUpdated,
+            Title = "SiteTheme Update",
+            Progress = ProgressType.None,
             Body = new
             {
                 ThemeName = themeName,

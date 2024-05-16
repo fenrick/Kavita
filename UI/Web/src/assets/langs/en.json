@@ -182,15 +182,22 @@
 
     "theme-manager": {
         "title": "Theme Manager",
-        "looking-for-theme": "Looking for a light or e-ink theme? We have some custom themes you can use on our ",
-        "looking-for-theme-continued": "theme github.",
-        "scan": "Scan",
+        "description": "Kavita comes in my colors, find a color scheme that meets your needs or build one yourself and share it. Themes may be applied for your account or applied to all accounts.",
         "site-themes": "Site Themes",
         "set-default": "Set Default",
+        "default-theme": "Default theme",
+        "download": "{{changelog.download}}",
         "apply": "{{common.apply}}",
         "applied": "Applied",
+        "active-theme": "Active",
         "updated-toastr": "Site default has been updated to {{name}}",
-        "scan-queued": "A site theme scan has been queued"
+        "scan-queued": "A site theme scan has been queued",
+        "delete": "{{common.delete}}",
+        "drag-n-drop": "{{cover-image-chooser.drag-n-drop}}",
+        "upload": "{{cover-image-chooser.upload}}",
+        "upload-continued": "a css file",
+        "preview-default": "Select a theme first",
+        "preview-default-admin": "Select a theme first or upload one manually"
     },
 
     "theme": {
@@ -212,7 +219,7 @@
 
     "site-theme-provider-pipe": {
         "system": "System",
-        "user": "User"
+        "custom": "{{device-platform-pipe.custom}}"
     },
 
     "manage-devices": {
@@ -949,7 +956,7 @@
         "general-tab": "General",
         "metadata-tab": "Metadata",
         "cover-tab": "Cover",
-        "info-tab": "Info",
+        "info-tab": "{{edit-series-modal.info-tab}}",
         "progress-tab": "Progress",
         "no-summary": "No Summary available.",
         "writers-title": "{{series-metadata-detail.writers-title}}",
@@ -1167,7 +1174,7 @@
         "encode-as-description-part-2": "Can I Use WebP?",
         "encode-as-description-part-3": "Can I Use AVIF?",
         "encode-as-warning": "You cannot convert back to PNG once you've gone to WebP/AVIF. You would need to refresh covers on your libraries to regenerate all covers. Bookmarks and favicons cannot be converted.",
-        "media-warning": "You must trigger the media conversion task in Tasks Tab.,",
+        "media-warning": "You must trigger the media conversion task in Tasks Tab.",
         "encode-as-label": "Save Media As",
         "encode-as-tooltip": "All media Kavita manages (covers, bookmarks, favicons) will be encoded as this type.",
         "bookmark-dir-label": "Bookmarks Directory",
@@ -1373,6 +1380,7 @@
         "cancel": "{{common.cancel}}",
         "general-tab": "General",
         "cover-image-tab": "Cover Image",
+        "info-tab": "{{edit-series-modal.info-tab}}",
         "series-tab": "Series",
         "name-label": "Name",
         "name-validation": "Name must be unique",
@@ -1381,7 +1389,11 @@
         "summary-label": "Summary",
         "deselect-all": "{{common.deselect-all}}",
         "select-all": "{{common.select-all}}",
-        "filter-label": "{{common.filter}}"
+        "filter-label": "{{common.filter}}",
+        "last-sync-title": "Last Sync:",
+        "source-url-title": "Source Url:",
+        "total-series-title": "Total Series:",
+        "missing-series-title": "Missing Series:"
     },
 
     "library-detail": {
@@ -1423,7 +1435,9 @@
         "no-data": "There are no items. Try adding a series.",
         "no-data-filtered": "No items match your current filter.",
         "title-alt": "Kavita - {{collectionName}} Collection",
-        "series-header": "Series"
+        "series-header": "Series",
+        "sync-progress": "Series Collected: {{title}}",
+        "last-sync": "Last Sync: {{date}}"
     },
 
     "all-collections": {
@@ -1490,7 +1504,8 @@
         "close": "{{common.close}}",
         "users-online-count": "{{num}} Users online",
         "active-events-title": "Active Events:",
-        "no-data": "Not much going on here"
+        "no-data": "Not much going on here",
+        "left-to-process": "Left to Process: {{leftToProcess}}"
     },
 
     "shortcuts-modal": {
@@ -1575,14 +1590,17 @@
         "promote-tooltip": "Promotion means that the collection can be seen server-wide, not just for you. All series within this collection will still have user-access restrictions placed on them."
     },
 
-
+    "browse-themes-modal": {
+        "title": "Browse Themes"
+    },
 
     "import-mal-collection-modal": {
         "close": "{{common.close}}",
         "title": "MAL Interest Stack Import",
         "description": "Import your MAL Interest Stacks and create Collections within Kavita",
         "series-count": "{{common.series-count}}",
-        "restack-count": "{{num}} Restacks"
+        "restack-count": "{{num}} Restacks",
+        "nothing-found": ""
     },
 
     "edit-chapter-progress": {
@@ -1745,7 +1763,8 @@
         "time-to-read": "Time to Read",
         "release-year": "Release Year",
         "read-progress": "Last Read",
-        "average-rating": "Average Rating"
+        "average-rating": "Average Rating",
+        "random": "Random"
     },
 
     "edit-series-modal": {
@@ -1937,7 +1956,10 @@
         "rejected-cover-upload": "The image could not be fetched due to server refusing request. Please download and upload from file instead.",
         "invalid-confirmation-url": "Invalid confirmation url",
         "invalid-confirmation-email": "Invalid confirmation email",
-        "invalid-password-reset-url": "Invalid reset password url"
+        "invalid-password-reset-url": "Invalid reset password url",
+        "delete-theme-in-use": "Theme is currently in use by at least one user, cannot delete",
+        "theme-manual-upload": "There was an issue creating Theme from manual upload",
+        "theme-already-in-use": "Theme already exists by that name"
     },
 
     "metadata-builder": {
@@ -2175,7 +2197,9 @@
         "collections-unpromoted": "Collections un-promoted",
         "confirm-delete-collections": "Are you sure you want to delete multiple collections?",
         "collections-deleted": "Collections deleted",
-        "pdf-book-mode-screen-size": "Screen too small for Book mode"
+        "pdf-book-mode-screen-size": "Screen too small for Book mode",
+        "stack-imported": "Stack Imported",
+        "confirm-delete-theme": "Removing this theme will delete it from the disk. You can grab it from temp directory before removal"
 
     },
 

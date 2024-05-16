@@ -32,7 +32,6 @@ public interface ITaskScheduler
     void AnalyzeFilesForLibrary(int libraryId, bool forceUpdate = false);
     void CancelStatsTasks();
     Task RunStatCollection();
-    void ScanSiteThemes();
     void CovertAllCoversToEncoding();
     Task CleanupDbEntries();
     Task CheckForUpdate();
@@ -57,12 +56,14 @@ public class TaskScheduler : ITaskScheduler
     private readonly IScrobblingService _scrobblingService;
     private readonly ILicenseService _licenseService;
     private readonly IExternalMetadataService _externalMetadataService;
+    private readonly ISmartCollectionSyncService _smartCollectionSyncService;
 
     public static BackgroundJobServer Client => new ();
     public const string ScanQueue = "scan";
     public const string DefaultQueue = "default";
     public const string RemoveFromWantToReadTaskId = "remove-from-want-to-read";
     public const string UpdateYearlyStatsTaskId = "update-yearly-stats";
+    public const string SyncThemesTaskId = "sync-themes";
     public const string CheckForUpdateId = "check-updates";
     public const string CleanupDbTaskId = "cleanup-db";
     public const string CleanupTaskId = "cleanup";
@@ -74,6 +75,7 @@ public class TaskScheduler : ITaskScheduler
     public const string ProcessProcessedScrobblingEventsId = "process-processed-scrobbling-events";
     public const string LicenseCheckId = "license-check";
     public const string KavitaPlusDataRefreshId = "kavita+-data-refresh";
+    public const string KavitaPlusStackSyncId = "kavita+-stack-sync";
 
     private static readonly ImmutableArray<string> ScanTasks =
         ["ScannerService", "ScanLibrary", "ScanLibraries", "ScanFolder", "ScanSeries"];
@@ -91,7 +93,7 @@ public class TaskScheduler : ITaskScheduler
         ICleanupService cleanupService, IStatsService statsService, IVersionUpdaterService versionUpdaterService,
         IThemeService themeService, IWordCountAnalyzerService wordCountAnalyzerService, IStatisticService statisticService,
         IMediaConversionService mediaConversionService, IScrobblingService scrobblingService, ILicenseService licenseService,
-        IExternalMetadataService externalMetadataService)
+        IExternalMetadataService externalMetadataService, ISmartCollectionSyncService smartCollectionSyncService)
     {
         _cacheService = cacheService;
         _logger = logger;
@@ -109,6 +111,7 @@ public class TaskScheduler : ITaskScheduler
         _scrobblingService = scrobblingService;
         _licenseService = licenseService;
         _externalMetadataService = externalMetadataService;
+        _smartCollectionSyncService = smartCollectionSyncService;
     }
 
     public async Task ScheduleTasks()
@@ -158,6 +161,9 @@ public class TaskScheduler : ITaskScheduler
         RecurringJob.AddOrUpdate(UpdateYearlyStatsTaskId, () => _statisticService.UpdateServerStatistics(),
             Cron.Monthly, RecurringJobOptions);
 
+        RecurringJob.AddOrUpdate(SyncThemesTaskId, () => _themeService.SyncThemes(),
+            Cron.Weekly, RecurringJobOptions);
+
         await ScheduleKavitaPlusTasks();
     }
 
@@ -186,6 +192,10 @@ public class TaskScheduler : ITaskScheduler
         RecurringJob.AddOrUpdate(KavitaPlusDataRefreshId,
             () => _externalMetadataService.FetchExternalDataTask(), Cron.Daily(Rnd.Next(1, 4)),
             RecurringJobOptions);
+
+        RecurringJob.AddOrUpdate(KavitaPlusStackSyncId,
+            () => _smartCollectionSyncService.Sync(), Cron.Daily(Rnd.Next(1, 4)),
+            RecurringJobOptions);
     }
 
     #region StatsTasks
@@ -193,7 +203,7 @@ public class TaskScheduler : ITaskScheduler
 
     public async Task ScheduleStatsTasks()
     {
-        var allowStatCollection  = (await _unitOfWork.SettingsRepository.GetSettingsDtoAsync()).AllowStatCollection;
+        var allowStatCollection = (await _unitOfWork.SettingsRepository.GetSettingsDtoAsync()).AllowStatCollection;
         if (!allowStatCollection)
         {
             _logger.LogDebug("User has opted out of stat collection, not registering tasks");
@@ -232,18 +242,6 @@ public class TaskScheduler : ITaskScheduler
             return;
         }
         BackgroundJob.Schedule(() => _statsService.Send(), DateTimeOffset.Now.AddDays(1));
-    }
-
-    public void ScanSiteThemes()
-    {
-        if (HasAlreadyEnqueuedTask("ThemeService", "Scan", Array.Empty<object>(), ScanQueue))
-        {
-            _logger.LogInformation("A Theme Scan is already running");
-            return;
-        }
-
-        _logger.LogInformation("Enqueueing Site Theme scan");
-        BackgroundJob.Enqueue(() => _themeService.Scan());
     }
 
     public void CovertAllCoversToEncoding()
