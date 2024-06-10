@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -137,6 +138,7 @@ public interface ISeriesRepository
     Task<IList<Series>> GetWantToReadForUserAsync(int userId);
     Task<bool> IsSeriesInWantToRead(int userId, int seriesId);
     Task<Series?> GetSeriesByFolderPath(string folder, SeriesIncludes includes = SeriesIncludes.None);
+    Task<Series?> GetSeriesThatContainsLowestFolderPath(string folder, SeriesIncludes includes = SeriesIncludes.None);
     Task<IEnumerable<Series>> GetAllSeriesByNameAsync(IList<string> normalizedNames,
         int userId, SeriesIncludes includes = SeriesIncludes.None);
     Task<Series?> GetFullSeriesByAnyName(string seriesName, string localizedName, int libraryId, MangaFormat format, bool withFullIncludes = true);
@@ -1589,14 +1591,29 @@ public class SeriesRepository : ISeriesRepository
     /// <summary>
     /// Return a Series by Folder path. Null if not found.
     /// </summary>
-    /// <param name="folder">This will be normalized in the query</param>
+    /// <param name="folder">This will be normalized in the query and checked against FolderPath and LowestFolderPath</param>
     /// <param name="includes">Additional relationships to include with the base query</param>
     /// <returns></returns>
     public async Task<Series?> GetSeriesByFolderPath(string folder, SeriesIncludes includes = SeriesIncludes.None)
     {
         var normalized = Services.Tasks.Scanner.Parser.Parser.NormalizePath(folder);
+        if (string.IsNullOrEmpty(normalized)) return null;
+
         return await _context.Series
-            .Where(s => s.FolderPath != null && s.FolderPath.Equals(normalized))
+            .Where(s => (!string.IsNullOrEmpty(s.FolderPath) && s.FolderPath.Equals(normalized) || (!string.IsNullOrEmpty(s.LowestFolderPath) && s.LowestFolderPath.Equals(normalized))))
+            .Includes(includes)
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<Series?> GetSeriesThatContainsLowestFolderPath(string folder, SeriesIncludes includes = SeriesIncludes.None)
+    {
+        var normalized = Services.Tasks.Scanner.Parser.Parser.NormalizePath(folder);
+        if (string.IsNullOrEmpty(normalized)) return null;
+
+        normalized = normalized.TrimEnd('/');
+
+        return await _context.Series
+            .Where(s => !string.IsNullOrEmpty(s.LowestFolderPath) && EF.Functions.Like(normalized, s.LowestFolderPath + "%"))
             .Includes(includes)
             .SingleOrDefaultAsync();
     }
@@ -2101,7 +2118,8 @@ public class SeriesRepository : ISeriesRepository
                 LowestFolderPath = s.LowestFolderPath,
                 Format = s.Format,
                 LibraryRoots = s.Library.Folders.Select(f => f.Path)
-            }).ToListAsync();
+            })
+            .ToListAsync();
 
         var map = new Dictionary<string, IList<SeriesModified>>();
         foreach (var series in info)
@@ -2120,7 +2138,7 @@ public class SeriesRepository : ISeriesRepository
             }
 
 
-            if (string.IsNullOrEmpty(series.LowestFolderPath)) continue;
+            if (string.IsNullOrEmpty(series.LowestFolderPath) || series.FolderPath.Equals(series.LowestFolderPath)) continue;
             if (!map.TryGetValue(series.LowestFolderPath, out var value2))
             {
                 map.Add(series.LowestFolderPath, new List<SeriesModified>()
